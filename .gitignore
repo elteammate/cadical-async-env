@@ -1,1 +1,5 @@
 .idea
+.venv
+instances/
+archives/
+checkpoints*/

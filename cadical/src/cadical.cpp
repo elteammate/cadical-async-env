@@ -253,6 +253,10 @@ void App::print_usage (bool all) {
         "non-compressed file reading if the signature does not match.\n",
         stdout);
   }
+
+  printf("\nelt's features:\n"
+         "--socket <path>  Connect to a unix socket at the given path\n"
+         );
 }
 
 /*------------------------------------------------------------------------*/
@@ -380,6 +384,7 @@ int App::main (int argc, char **argv) {
 #endif
   bool witness = true, less = false, status = true;
   const char *dimacs_name, *err;
+  char *socket_path = 0;
 
   for (int i = 1; i < argc; i++) {
     if (!strcmp (argv[i], "-h") || !strcmp (argv[i], "--help") ||
@@ -393,6 +398,14 @@ int App::main (int argc, char **argv) {
         dimacs_specified = true;
       else
         proof_specified = true;
+    } else if (!strcmp(argv[i], "--socket")) {
+      if (++i == argc) 
+        APPERR ("argument to '--socket' missing");
+      else if (socket_path)
+        APPERR ("multiple socket options '--socket %s' and '--socket %s'",
+                socket_path, argv[i]);
+      else
+        socket_path = argv[i];
     } else if (!strcmp (argv[i], "-r")) {
       if (++i == argc)
         APPERR ("argument to '-r' missing");
@@ -570,6 +583,10 @@ int App::main (int argc, char **argv) {
         APPERR ("DRAT proof file '%s' not writable", proof_path);
     } else
       dimacs_specified = true, dimacs_path = argv[i];
+  }
+
+  if (socket_path) {
+    solver->internal->connection = new Connection(socket_path);
   }
 
   /*----------------------------------------------------------------------*/
